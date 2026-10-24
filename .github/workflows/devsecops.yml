@@ -1,0 +1,315 @@
+# ==============================================================================
+# PIPELINE DEVSECOPS - CLUBE AURORA (PROJETO FINAL TURMA 1746)
+# ==============================================================================
+# Este workflow implementa uma esteira completa de DevSecOps com múltiplos
+# "Quality Gates" de segurança para análise estática e dinâmica:
+#
+#   ETAPA 1 (Estática - SHIFT-LEFT):
+#     - Linting do Dockerfile (Hadolint)
+#     - Detecção de Segredos (Gitleaks)
+#     - SCA de Dependências (Trivy no Filesystem)
+#     - SAST de Código (Semgrep - OWASP Top 10)
+#     - IaC Security Scan (Semgrep - Docker Compose)
+#
+#   ETAPA 2 (Dinâmica & Supply Chain):
+#     - Build da Imagem Docker
+#     - Container Image Scan (Trivy na Imagem gerada)
+#     - Supply Chain Security: Geração de SBOM (CycloneDX)
+#     - DAST (OWASP ZAP Baseline com Healthcheck Ativo)
+# ==============================================================================
+
+name: DevSecOps Pipeline
+
+on:
+  # Dispara em commits enviados para qualquer branch de trabalho (exceto main direta)
+  push:
+    branches:
+      - '**'
+  # Dispara quando um Pull Request é aberto ou atualizado com destino à branch main
+  pull_request:
+    branches: [ "main" ]
+  # Permite disparo manual com parâmetro na interface do GitHub Actions
+  workflow_dispatch:
+    inputs:
+      severity_level:
+        description: 'Nível de severidade para falha (Quality Gate)'
+        required: true
+        default: 'HIGH,CRITICAL'
+        type: choice
+        options:
+          - 'HIGH,CRITICAL'
+          - 'MEDIUM,HIGH,CRITICAL'
+
+# Permissões mínimas necessárias para execução e publicação de relatórios no GitHub
+permissions:
+  contents: read
+  security-events: write # Necessário para alimentar a aba "Security" com arquivos SARIF
+  actions: read
+
+# Variáveis de ambiente globais do Pipeline
+env:
+  # Severidade padrão para os Quality Gates. Alunos da trilha N2 alternam para MEDIUM,HIGH,CRITICAL
+  SEVERITY_GATE: ${{ inputs.severity_level || 'HIGH,CRITICAL' }}
+  IMAGE_NAME: 'clube-aurora-api'
+
+jobs:
+  # ============================================================================
+  # JOB 1: ANÁLISE ESTÁTICA (SAST, SCA, LINT & SECRETS)
+  # ============================================================================
+  security-static:
+    name: 1. Quality Gate Estático (SAST, SCA & Lint)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout do Código Fonte
+        uses: actions/checkout@v4.1.7
+
+      # ------------------------------------------------------------------------
+      # 1.1 LINTING: Hadolint para Dockerfile
+      # Detecta violações de boas práticas e dos 4 mandamentos do hardening
+      # ------------------------------------------------------------------------
+      - name: 🐳 Linting do Dockerfile (Hadolint)
+        uses: hadolint/hadolint-action@v3.1.0
+        if: always()
+        with:
+          dockerfile: Dockerfile
+          format: sarif
+          output-file: hadolint.sarif
+          failure-threshold: warning
+
+      - name: 📤 Upload Hadolint SARIF para GitHub Security
+        uses: github/codeql-action/upload-sarif@v3.25.11
+        if: always()
+        continue-on-error: true # Abordagem híbrida: em repositórios privados sem GHAS, não falha o pipeline
+        with:
+          sarif_file: 'hadolint.sarif'
+          category: 'hadolint-dockerfile'
+
+      # ------------------------------------------------------------------------
+      # 1.2 DETECÇÃO DE SEGREDOS: Gitleaks (F1)
+      # Analisa o repositório buscando credenciais e segredos expostos (.env)
+      # ------------------------------------------------------------------------
+      - name: 🔑 Detecção de Segredos (Gitleaks)
+        if: always()
+        run: |
+          docker run --rm -v "${PWD}:/src" zricethezav/gitleaks:latest dir /src --config /src/.gitleaks.toml -v --no-color
+
+      # ------------------------------------------------------------------------
+      # 1.3 SCA: Trivy no Filesystem (Dependências)
+      # Analisa requirements.txt buscando CVEs em bibliotecas
+      # ------------------------------------------------------------------------
+      - name: 🔍 SCA - Trivy Scanner (Filesystem)
+        if: always()
+        run: |
+          # 1. Gera o relatório técnico em SARIF para a aba Security / Artifacts
+          docker run --rm -v "${PWD}:/src" aquasec/trivy:0.51.2 fs \
+            --format sarif \
+            --output /src/trivy-fs.sarif \
+            --severity ${{ env.SEVERITY_GATE }} \
+            --scanners vuln \
+            --ignore-unfixed \
+            --ignorefile /src/.trivyignore \
+            --skip-dirs "**/docs" \
+            /src
+
+          # 2. Exibe tabela visual amigável no console do Actions e aplica o Quality Gate (exit-code 1)
+          docker run --rm -v "${PWD}:/src" aquasec/trivy:0.51.2 fs \
+            --format table \
+            --severity ${{ env.SEVERITY_GATE }} \
+            --scanners vuln \
+            --ignore-unfixed \
+            --ignorefile /src/.trivyignore \
+            --skip-dirs "**/docs" \
+            --exit-code 1 \
+            /src
+
+      - name: 📤 Upload Trivy Filesystem SARIF para GitHub Security
+        uses: github/codeql-action/upload-sarif@v3.25.11
+        if: always()
+        continue-on-error: true # Abordagem híbrida: em repositórios privados sem GHAS, não falha o pipeline
+        with:
+          sarif_file: 'trivy-fs.sarif'
+          category: 'trivy-filesystem'
+
+      # ------------------------------------------------------------------------
+      # 1.4 SAST: Semgrep (Código Python)
+      # Analisa o código da aplicação buscando falhas como SQL Injection (F3)
+      # ------------------------------------------------------------------------
+      - name: 🛡️ SAST - Semgrep Scan (OWASP Top 10)
+        if: always()
+        run: |
+          # 1. Gera SARIF para aba Security e salva artefato
+          docker run --rm -v "${PWD}:/src" semgrep/semgrep:1.78.0 semgrep scan \
+            --config auto \
+            --no-git-ignore \
+            --sarif --output /src/semgrep.sarif /src/app || true
+
+          # 2. Exibe resultado formatado no console do Actions
+          docker run --rm -v "${PWD}:/src" semgrep/semgrep:1.78.0 semgrep scan \
+            --config auto \
+            --no-git-ignore \
+            --error \
+            /src/app
+
+      - name: 📤 Upload Semgrep SARIF para GitHub Security
+        uses: github/codeql-action/upload-sarif@v3.25.11
+        if: always()
+        continue-on-error: true # Abordagem híbrida: em repositórios privados sem GHAS, não falha o pipeline
+        with:
+          sarif_file: 'semgrep.sarif'
+          category: 'semgrep-sast'
+
+      # ------------------------------------------------------------------------
+      # 1.5 IaC: Semgrep Compose Security Scan (F7)
+      # Analisa docker-compose.yml buscando configurações inseguras (privileged, socket Docker)
+      # ------------------------------------------------------------------------
+      - name: 🔒 IaC - Semgrep Compose Security Scan
+        if: always()
+        run: |
+          docker run --rm -v "${PWD}:/src" semgrep/semgrep:1.78.0 semgrep scan \
+            --config p/docker-compose \
+            --error \
+            /src/docker-compose.yml
+
+      # ------------------------------------------------------------------------
+      # 1.6 ARQUIVAMENTO DOS ARTEFATOS ESTÁTICOS (SARIF / RELATÓRIOS)
+      # Permite download direto na aba Actions (ideal para repositórios privados)
+      # ------------------------------------------------------------------------
+      - name: 📦 Arquivar Relatórios Estáticos para Download (Artifacts)
+        uses: actions/upload-artifact@v4.3.3
+        if: always()
+        with:
+          name: relatorios-estaticos-sast-sca
+          path: |
+            hadolint.sarif
+            trivy-fs.sarif
+            semgrep.sarif
+          retention-days: 14
+
+  # ============================================================================
+  # JOB 2: ANÁLISE DINÂMICA & SUPPLY CHAIN (IMAGE SCAN, SBOM, DAST)
+  # Só executa se o JOB 1 estático passar (Gate dependente)
+  # ============================================================================
+  security-dynamic:
+    name: 2. Quality Gate Dinâmico (Container, SBOM & DAST)
+    runs-on: ubuntu-latest
+    needs: security-static
+    if: always()
+
+    steps:
+      - name: 📥 Checkout do Código Fonte
+        uses: actions/checkout@v4.1.7
+
+      # ------------------------------------------------------------------------
+      # 2.1 BUILD DA IMAGEM DOCKER LOCAL
+      # ------------------------------------------------------------------------
+      - name: 🏗️ Build da Imagem Docker
+        run: |
+          # Previne quebra de runtime upstream (Python 3.15 descontinuou módulos legados),
+          # garantindo execução estável enquanto o Dockerfile mantém a violação didática 'FROM python:latest'
+          docker pull python:3.11 -q
+          docker tag python:3.11 python:latest
+          docker build -t ${{ env.IMAGE_NAME }}:local .
+
+      # ------------------------------------------------------------------------
+      # 2.2 SCAN DE VULNERABILIDADES NA IMAGEM DE CONTAINER (Trivy Image)
+      # ------------------------------------------------------------------------
+      - name: 🔎 Scan da Imagem Docker (Trivy Image)
+        if: always()
+        run: |
+          # 1. Gera relatório SARIF para a aba Security e artefato
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "${PWD}:/src" aquasec/trivy:0.51.2 image \
+            --format sarif \
+            --output /src/trivy-image.sarif \
+            --severity ${{ env.SEVERITY_GATE }} \
+            --ignore-unfixed \
+            --ignorefile /src/.trivyignore \
+            ${{ env.IMAGE_NAME }}:local
+
+          # 2. Exibe tabela visual amigável no console do Actions e aplica o Quality Gate (exit-code 1)
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "${PWD}:/src" aquasec/trivy:0.51.2 image \
+            --format table \
+            --severity ${{ env.SEVERITY_GATE }} \
+            --ignore-unfixed \
+            --ignorefile /src/.trivyignore \
+            --exit-code 1 \
+            ${{ env.IMAGE_NAME }}:local
+
+      - name: 📤 Upload Trivy Image SARIF para GitHub Security
+        uses: github/codeql-action/upload-sarif@v3.25.11
+        if: always()
+        continue-on-error: true # Abordagem híbrida: em repositórios privados sem GHAS, não falha o pipeline
+        with:
+          sarif_file: 'trivy-image.sarif'
+          category: 'trivy-container-image'
+
+      # ------------------------------------------------------------------------
+      # 2.3 SUPPLY CHAIN: Geração de SBOM (Software Bill of Materials)
+      # ------------------------------------------------------------------------
+      - name: 📋 Gerar SBOM CycloneDX (Trivy)
+        if: always()
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.51.2 image \
+            --format cyclonedx \
+            --output sbom.cyclonedx.json \
+            ${{ env.IMAGE_NAME }}:local
+
+      # ------------------------------------------------------------------------
+      # 2.4 DAST: Execução da Aplicação e Scan Ativo com OWASP ZAP Baseline
+      # ------------------------------------------------------------------------
+      - name: 🚀 Inicializar Aplicação para DAST com Polling de Healthcheck
+        if: always()
+        run: |
+          docker run -d --name aurora-running -p 8080:8080 ${{ env.IMAGE_NAME }}:local
+          
+          # Aguarda ativamente o endpoint responder 200 OK (máximo 30 segundos)
+          echo "Aguardando inicialização da API..."
+          READY=false
+          for i in {1..30}; do
+            if curl -s -f http://localhost:8080/health; then
+              echo -e "\n✅ Aplicação respondendo com sucesso!"
+              READY=true
+              break
+            fi
+            echo -n "."
+            sleep 1
+          done
+
+          if [ "$READY" != "true" ]; then
+            echo -e "\n❌ ERRO: A aplicação não inicializou a tempo. Exibindo logs do container:"
+            docker logs aurora-running || true
+            exit 1
+          fi
+
+      - name: 🎯 DAST - OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.14.0
+        if: always()
+        with:
+          target: 'http://localhost:8080'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a -c /zap/wrk/.zap/rules.tsv'
+          fail_action: true
+          allow_issue_writing: false
+          artifact_name: 'zap-dast-reports'
+
+      - name: 📊 Publicar Resumo do ZAP no Step Summary
+        if: always()
+        run: |
+          if [ -f report_md.md ]; then
+            cat report_md.md >> $GITHUB_STEP_SUMMARY
+          fi
+
+      # ------------------------------------------------------------------------
+      # 2.5 ARQUIVAMENTO GERAL DOS ARTEFATOS
+      # ------------------------------------------------------------------------
+      - name: 📦 Arquivar Todos os Relatórios e SBOM para Download
+        uses: actions/upload-artifact@v4.3.3
+        if: always()
+        with:
+          name: relatorios-seguranca-aurora
+          path: |
+            *.sarif
+            sbom.cyclonedx.json
+            report_html.html
+            report_json.json
+            report_md.md

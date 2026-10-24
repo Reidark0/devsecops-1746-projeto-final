@@ -1,0 +1,14 @@
+# .gitleaks.toml — Gitleaks Allowlist Configuration
+# Estende as regras padrao do Gitleaks ignorando documentacao e materiais didaticos
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Ignorar documentacao e materiais didaticos de apoio"
+paths = [
+    '''(^|/)docs/''',
+    '''(^|/)aluno/''',
+    '''\.md$''',
+    '''\.docx$''',
+    '''\.pdf$'''
+]
