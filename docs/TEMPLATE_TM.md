@@ -1,12 +1,31 @@
-# Relatório Teórico Complementar - Clube Aurora (Trilha 2 — Mista)
+# Relatório Técnico-Analítico — Clube Aurora (Trilha 2 — Mista)
 
 **Nome do Aluno(a):** [Seu Nome Aqui]  
 **Turma:** DevSecOps 1746  
-**Data:** [Data de Entrega]
+**Data:** [Data de Entrega]  
+**Link do Repositório / Fork no GitHub:** `https://github.com/seu-usuario/seu-repo` *(Caso o repositório seja privado, certifique-se de adicionar a professora como colaboradora para avaliação)*  
+**Link do Pull Request Principal:** `https://github.com/seu-usuario/seu-repo/pull/1`
 
 ---
 
-## 1. Análise de Ameaças (STRIDE & Tríade CIA)
+## 1. Resumo das Correções Práticas de Engenharia (Código e Contêiner)
+
+Descreva brevemente como você corrigiu as falhas práticas do seu escopo (F1, F2 e F4):
+
+| Achado Prático | Arquivo Modificado | Resumo da Alteração Implementada |
+|---|---|---|
+| **F1: Segredos Hardcoded** | `.gitignore` e `.env` | *(Ex: Removido .env do versionamento git, adicionado ao .gitignore e criado .env.example seguro)* |
+| **F2: SCA (Dependências)** | `requirements.txt` | *(Ex: Atualizadas versões de Flask, Werkzeug e Gunicorn para mitigar CVEs conhecidas)* |
+| **F4: Hardening de Imagem** | `Dockerfile` | *(Ex: Imagem base python:3.11-slim, usuário não-root, sem cache e HEALTHCHECK configurado)* |
+
+### Evidência de Validação Prática:
+Cole aqui a comprovação de validação da sua entrega prática (print do terminal com o `python scripts/selfcheck.py --nivel 2` aprovado **OU** print dos steps correspondentes verdes no GitHub Actions):
+
+> *(Cole a imagem da execução do selfcheck ou dos steps do Actions aqui)*
+
+---
+
+## 2. Análise de Ameaças (STRIDE & Tríade CIA)
 
 Preencha a matriz de análise para os 4 achados conceituais da Trilha 2 (Mista):
 
@@ -19,7 +38,7 @@ Preencha a matriz de análise para os 4 achados conceituais da Trilha 2 (Mista):
 
 ---
 
-## 2. Decisão de Arquitetura & Governança (F6)
+## 3. Decisão de Arquitetura & Governança (F6)
 
 O Tio Armando solicitou que a nova gerente de atendimento, Carla, receba privilégios de **Admin geral** do sistema.
 1. Analise o pedido sob a ótica de **Segregação de Funções (SoD)** e **Menor Privilégio**.
@@ -28,7 +47,7 @@ O Tio Armando solicitou que a nova gerente de atendimento, Carla, receba privil�
 
 ---
 
-## 3. Observabilidade e Detecção de Intrusão
+## 4. Observabilidade e Detecção de Intrusão
 
 Caso uma conta de funcionário seja comprometida ou ocorram tentativas de força bruta na API:
 1. Quais eventos mínimos devem ser registrados no log de auditoria (`audit_log`)?

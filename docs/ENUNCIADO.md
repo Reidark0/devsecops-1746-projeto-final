@@ -10,9 +10,9 @@ O **Projeto Final do Clube Aurora** foi estruturado em três níveis de entrega 
 
 | Nível | Perfil Ideal | Tempo Estimado | Arquivos Entregues | Nota Máxima | Pré-requisitos Técnicos |
 | :--- | :--- | :--- | :--- | :---: | :--- |
-| **Nível 1 (Teórica Guiada)** | Análise conceitual, governança e conformidade | ~4 h | `RELATORIO_FINAL.md` | 10,0 | Navegador web e editor de texto (sem terminal/Docker) |
-| **Nível 2 (Mista)** | Equilíbrio entre código e modelagem conceitual | ~6 h | Pull Request (F1, F2, F4) + `EVIDENCIAS.md` + `RELATORIO_TEORICO.md` | 10,0 | Git básico, conta GitHub (saber abrir PR e ler logs) |
-| **Nível 3 (Técnica)** | Engenharia DevSecOps, automação e correção total | ~6 h a 8 h | Pull Request (F1..F7) + `.trivyignore` + `EVIDENCIAS.md` | 10,0 | Git, fork, CI/CD e raciocínio de debugging |
+| **Nível 1 (Teórica Guiada)** | Análise conceitual, governança e conformidade | ~4 h | `TEMPLATE_ENTREGA_TRILHA_1.docx` (ou `TEMPLATE_TG.md`) | 10,0 | Navegador web e editor de texto (sem terminal/Docker) |
+| **Nível 2 (Mista)** | Equilíbrio entre código e modelagem conceitual | ~6 h | Pull Request (F1, F2, F4) + `TEMPLATE_TM.docx` (ou `TEMPLATE_TM.md`) | 10,0 | Git básico, conta GitHub (saber abrir PR e ler logs) |
+| **Nível 3 (Técnica)** | Engenharia DevSecOps, automação e correção total | ~6 h a 8 h | Pull Request (F1..F7) + `.trivyignore` + `TEMPLATE_EVIDENCIAS.docx` (ou `TEMPLATE_EVIDENCIAS.md`) | 10,0 | Git, fork, CI/CD e raciocínio de debugging |
 
 > 🌟 **Regra de Ouro da Avaliação:**  
 > **Todos os três níveis permitem alcançar a nota máxima (10,0).** A avaliação não privilegia código em detrimento da teoria: o rigor na análise de risco, a qualidade das justificativas e a clareza técnica são pontuados com o mesmo peso. Escolha o nível em que você mais vai aprender!
@@ -70,7 +70,7 @@ A arquitetura do projeto foi desenhada de forma **modular, cumulativa e concênt
    - Da mesma forma, se preferir focar exclusivamente na governança e modelagem de ameaças, você pode optar pela entrega do [`TEMPLATE_TG.md`](./TEMPLATE_TG.md) (ou via pasta [`trilha_1/`](./trilha_1/)) como **Trilha 1**, também concorrendo à nota máxima.
 
 3. **Como formalizar a sua escolha final:**
-   - Não há necessidade de comunicação prévia ou burocracia: sua trilha é definida pelo template de entrega que você submeter (`TEMPLATE_TG.md` para Trilha 1, `TEMPLATE_TM.md` para Trilha 2 ou `TEMPLATE_EVIDENCIAS.md` para Trilha 3). Marque a caixa de seleção correspondente no topo do documento.
+   - Não há necessidade de comunicação prévia ou burocracia: sua trilha é definida pelo template de entrega que você submeter (`TEMPLATE_ENTREGA_TRILHA_1.docx` / `TEMPLATE_TG.md` para Trilha 1, `TEMPLATE_TM.docx` / `TEMPLATE_TM.md` para Trilha 2 ou `TEMPLATE_EVIDENCIAS.docx` / `TEMPLATE_EVIDENCIAS.md` para Trilha 3).
 
 ---
 
@@ -161,8 +161,7 @@ Ideal para quem busca equilíbrio: você coloca a mão na massa para corrigir as
 
 ### 5.2 O Que Você Entrega
 1. **Pull Request no GitHub:** Contendo as correções no código para **F1** (segredos e `.gitignore`), **F2** (`requirements.txt`) e **F4** (`Dockerfile`).
-2. **`EVIDENCIAS.md`:** Preenchido a partir do [`aluno/TEMPLATE_EVIDENCIAS.md`](./TEMPLATE_EVIDENCIAS.md) com links do PR e prints dos checks verdes.
-3. **`RELATORIO_TEORICO.md`:** Preenchido a partir do [`aluno/TEMPLATE_TM.md`](./TEMPLATE_TM.md) cobrindo a modelagem teórica de **F3, F5, F6 e F7**.
+2. **`TEMPLATE_TM.docx` (ou `TEMPLATE_TM.md`):** Relatório técnico-analítico preenchido com o link do PR/fork, o resumo das 3 correções práticas (com print do selfcheck ou Actions) e a modelagem teórica de **F3, F5, F6 e F7**.
 
 ### 5.3 O Que Você NÃO Precisa Fazer
 * Não precisa mexer em SQL complexo ou query parametrizada de banco (F3).
@@ -186,9 +185,8 @@ Consulte também o guia complementar da trilha em:
 
 ### 5.6 Critério de Pronto
 - [ ] Pull Request aberto e apontando para a branch `main` do seu fork.
-- [ ] Job `1. Quality Gate Estático` aprovado nos steps de Hadolint e Trivy FS.
-- [ ] `RELATORIO_TEORICO.md` preenchido com a análise de STRIDE/CIA de F3, F5, F6 e F7.
-- [ ] `EVIDENCIAS.md` preenchido com link do PR e prints comprobatórios.
+- [ ] Job `1. Quality Gate Estático` aprovado nos steps de Hadolint e Trivy FS (ou autocheck local `python scripts/selfcheck.py --nivel 2` verde).
+- [ ] Relatório `TEMPLATE_TM.docx` (ou `TEMPLATE_TM.md`) preenchido com link do PR, resumo prático e análise teórica de F3, F5, F6 e F7.
 
 ### 5.7 Armadilhas Comuns a Evitar
 * *Esquecer de desindexar o `.env`:* Apenas colocar `.env` no `.gitignore` não remove o arquivo se ele já estiver comitado. É preciso rodar `git rm --cached .env`.
@@ -205,7 +203,7 @@ Para quem busca imersão profunda em Engenharia DevSecOps: resolução ponta a p
 1. **Pull Request Completo:** Corrigindo todas as 7 falhas deliberadas (**F1 a F7**).
 2. **Disparo com Quality Gate em MEDIUM:** Disparo manual via `workflow_dispatch` com sensibilidade aumentada.
 3. **Registro de Exceção em `.trivyignore`:** Documentação técnica de aceitação de risco temporária conforme boas práticas.
-4. **`EVIDENCIAS.md`:** Preenchido a partir do [`aluno/TEMPLATE_EVIDENCIAS.md`](./TEMPLATE_EVIDENCIAS.md) com todas as saídas e relatórios comprovados.
+4. **`TEMPLATE_EVIDENCIAS.docx` (ou `TEMPLATE_EVIDENCIAS.md`):** Preenchido a partir do modelo oficial com todas as saídas e comprovantes dos 5 jobs verdes.
 
 ### 6.3 Roteiro de Dicas Iterativas & Comandos de Validação
 Para o roteiro completo de depuração CLI das 7 falhas (diagnóstico de logs, direcionamento arquitetural e validação de scanners locais), consulte:  
@@ -221,11 +219,11 @@ No pipeline do Clube Aurora, a esteira opera em modo Fail-Fast. Siga esta ordem 
 4. **F5 (Headers HTTP)**: *Configura o ZAP Baseline para validar a aplicação no ar com status verde.*
 
 ### 6.5 Critério de Pronto
-- [ ] Validador automatizado (`validate.py` ou `validate.ps1`) retornando **7 PASSes (100% OK)**.
+- [ ] Validador automatizado (`python scripts/selfcheck.py --trilha 3`) retornando **7 PASSes (100% OK)**.
 - [ ] Testes automatizados (`pytest -v`) passando sem regressão.
 - [ ] Todos os jobs do GitHub Actions verdes (estático e dinâmico, incluindo ZAP Baseline).
 - [ ] Disparo com gate `MEDIUM` documentado e arquivo `.trivyignore` preenchido.
-- [ ] `EVIDENCIAS.md` preenchido com link do PR e prints dos resultados.
+- [ ] `TEMPLATE_EVIDENCIAS.docx` (ou `TEMPLATE_EVIDENCIAS.md`) preenchido com link do PR e prints dos resultados.
 
 ### 6.6 Armadilhas Comuns a Evitar
 * *Inversão de decoradores no Flask:* O decorador `@bp.post(...)` deve envolver a rota primeiro; a restrição `@auth.require_role("admin")` fica logo abaixo.
@@ -316,7 +314,7 @@ Para um guia visual sobre como ler cada coluna dos relatórios de SCA e SAST, co
 | **Etapa 1** | Ler o caso, contexto e glossário; estudar o exemplo F1 no manual | Fork, habilitação do Actions, clonagem local e primeiro disparo (vermelho) | Fork, setup de branch, primeiro disparo e auditoria local | Ambiente pronto e trilha inicial selecionada |
 | **Etapa 2** | Preencher análise STRIDE e Tríade CIA para F2 e F3 | Corrigir F1 (segredos) e F2 (`requirements.txt`); push e teste | Corrigir F2, F3 e F4 (eliminar bloqueios da imagem contêiner) | Primeiros jobs verdes aparecendo no pipeline |
 | **Etapa 3** | Analisar F4 e responder a decisão de governança do Tio Armando (F6) | Corrigir F4 (`Dockerfile`) e redigir teoria de F3 e F5 | Corrigir F1, F5, F6 e F7; rodar validador até 100% OK | Aplicação funcional e protegida contra ataques |
-| **Etapa 4** | Redigir memorando executivo de 3 parágrafos e revisar checklist | Finalizar relatório teórico (F6 e F7) e montar `EVIDENCIAS.md` | Executar gate MEDIUM, documentar `.trivyignore` e finalizar evidências | Entrega final concluída e checklist verificado |
+| **Etapa 4** | Redigir memorando executivo de 3 parágrafos e revisar checklist | Finalizar relatório `TEMPLATE_TM.md` com evidências práticas | Executar gate MEDIUM, documentar `.trivyignore` e finalizar evidências | Entrega final concluída e checklist verificado |
 
 ---
 

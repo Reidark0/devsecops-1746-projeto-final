@@ -298,9 +298,7 @@ Violação de controle de acesso (Broken Access Control). Usuários comuns conse
 #### Prova de Validação
 Execute o teste automatizado ou o validador do curso:
 ```bash
-python professor/validate.py aurora
-# ou
-powershell -ExecutionPolicy Bypass -File professor/validate.ps1 aurora
+python scripts/selfcheck.py --trilha 3
 ```
 O check de F6 passará com sucesso!
 
@@ -399,13 +397,9 @@ Certifique-se de que a resposta HTTP contém:
 ### 5.3 Validação Estrutural Local com o Script da Professora
 Você pode auditar se as 7 correções atendem aos critérios do gabarito antes de abrir o Pull Request:
 ```bash
-# Se tiver Python na máquina:
-python professor/validate.py .
-
-# Se estiver no Windows PowerShell:
-powershell -ExecutionPolicy Bypass -File professor/validate.ps1 .
+python scripts/selfcheck.py --trilha 3
 ```
-O script testará as 7 falhas e deve relatar `7 de 7 falhas devidamente corrigidas!`
+O script testará as 7 falhas e deve relatar `SUCESSO: Todas as checagens da Trilha 3 passaram localmente!`
 
 ---
 
