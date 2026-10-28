@@ -26,6 +26,20 @@ def create_app(test_config=None):
 
     app.teardown_appcontext(db.close_db)
 
+    @app.after_request
+    def set_security_headers(response):
+        # Registrado no nível da aplicação (não do blueprint) para cobrir
+        # também respostas de erro (404/500) que nunca chegam a ser roteadas
+        # para dentro do blueprint "main" — ex.: GET /admin sem rota definida.
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Content-Security-Policy"] = "default-src 'self'"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=()"
+        response.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
+        return response
+
     from .main import bp
 
     app.register_blueprint(bp)

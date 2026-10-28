@@ -10,16 +10,6 @@ VALID_SERVICES = {"viagem", "arte", "evento"}
 VALID_ROLES = {"staff", "admin"}
 
 
-@bp.after_request
-def set_security_headers(response):
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["Content-Security-Policy"] = "default-src 'self'"
-    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-    response.headers["Referrer-Policy"] = "no-referrer"
-    return response
-
-
 @bp.get("/")
 def index():
     return jsonify(message="Clube Aurora API", status="ok")
