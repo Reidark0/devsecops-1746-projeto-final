@@ -20,3 +20,17 @@
 # Data de Revisão: 2027-04-30
 # ------------------------------------------------------------------------------
 90005	IGNORE	(Sec-Fetch-Dest é cabeçalho de requisição; não corrigível no servidor)
+# ------------------------------------------------------------------------------
+# Regra: 10049 (Content Cacheability — Non-Storable/Storable.../Storable e...)
+# Severidade: Informational
+# Justificativa Técnica: esta regra classifica TODA resposta em uma de 3
+# categorias mutuamente exclusivas (10049-1 Non-Storable, 10049-2 Storable
+# mas não cacheável, 10049-3 Storable e cacheável) — ou seja, sempre dispara
+# exatamente um dos três alertas, não importa a configuração de cabeçalhos.
+# Já aplicamos Cache-Control: no-store (a opção mais segura, resultando na
+# variante "Non-Storable"), então o achado é esperado e não indica um
+# problema real.
+# Responsável: Rafael César (DevSecOps, Trilha 3)
+# Data de Revisão: 2027-04-30
+# ------------------------------------------------------------------------------
+10049	IGNORE	(Classificação informativa que sempre dispara; já usamos a variante mais segura - Cache-Control: no-store)

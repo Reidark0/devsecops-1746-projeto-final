@@ -44,6 +44,7 @@ def create_app(test_config=None):
         response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=()"
         response.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
         response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+        response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
         # API retorna dados de clientes VIP: nunca deve ficar em cache de
         # proxies/navegador (regra ZAP 10049: Storable and Cacheable Content).
         response.headers["Cache-Control"] = "no-store, max-age=0"
