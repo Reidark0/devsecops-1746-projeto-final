@@ -12,7 +12,13 @@ FROM python:3.11-slim
 RUN apt-get update \
     && apt-get upgrade -y \
     && rm -rf /var/lib/apt/lists/* \
-    && useradd -u 10001 -m nonroot
+    && useradd -u 10001 -m nonroot \
+    # wheel e jaraco.context vêm do bootstrap de pip/setuptools da imagem
+    # base (ensurepip), não de requirements.txt — são ferramentas de build,
+    # nunca importadas pela aplicação em runtime. Atualizadas aqui para as
+    # versões corrigidas (CVE-2026-24049 / CVE-2026-23949) reportadas pelo
+    # Trivy Image scan.
+    && python -m pip install --no-cache-dir --upgrade "wheel>=0.46.2" "jaraco.context>=6.1.0"
 
 WORKDIR /app
 
