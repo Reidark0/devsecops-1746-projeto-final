@@ -2,8 +2,10 @@
 
 **Projeto:** DevSecOps 1746 — Projeto Final
 **Escopo:** Correção integral das 7 falhas de segurança (F1 a F7) mapeadas no repositório `aurora/`
+**Repositório / Fork:** `https://github.com/Reidark0/devsecops-1746-projeto-final`
+**Pull Request:** `https://github.com/Reidark0/devsecops-1746-projeto-final/pull/1`
 **Branch de trabalho:** `fix/trilha-3-seguranca`
-**Commits:** 7 commits atômicos, um por falha, na ordem estratégica recomendada pelo guia da Trilha 3
+**Commits:** 13 commits atômicos — 7 falhas originais (um por falha, na ordem estratégica recomendada pelo guia da Trilha 3) + 5 correções de causa raiz nas 3 rodadas de feedback real do pipeline (seções 3 a 5) + 1 commit de documentação
 
 ---
 

@@ -4,9 +4,9 @@
 **Turma:** DevSecOps 1746
 **Link do Repositório / Fork no GitHub:** `https://github.com/Reidark0/devsecops-1746-projeto-final`
 **Branch com as correções:** `fix/trilha-3-seguranca` (12 commits atômicos — 7 falhas originais + 5 correções de causa raiz em 3 rodadas de feedback real do pipeline, ver seções 2 e 3)
-**Link do Pull Request Principal:** `⚠️ PENDENTE — preencher com o link do PR aberto no GitHub (ver print da Seção 3: "Triggered via pull request", run #8)`
+**Link do Pull Request Principal:** `https://github.com/Reidark0/devsecops-1746-projeto-final/pull/1`
 
-> **Status:** o pipeline já rodou de fato no GitHub Actions e, ao longo de 3 rodadas, revelou achados reais que a validação local (sem daemon Docker disponível no ambiente de correção) não conseguiu prever — todos corrigidos e commitados (ver Seção 3). A execução final (run #8, abaixo) já está **100% verde**. Falta apenas colar aqui o link exato do Pull Request.
+> **Status:** o pipeline já rodou de fato no GitHub Actions e, ao longo de 3 rodadas, revelou achados reais que a validação local (sem daemon Docker disponível no ambiente de correção) não conseguiu prever — todos corrigidos e commitados (ver Seção 3). A execução final (run #8, abaixo) já está **100% verde**. A branch `main` exige PR + aprovação (Branch Protection, ver Seção 4.2), então o PR [#1](https://github.com/Reidark0/devsecops-1746-projeto-final/pull/1) segue aberto aguardando revisão antes do merge — o que não impede a entrega, já que o requisito da disciplina é o PR aberto com a esteira verde, não o merge em si.
 
 ---
 
