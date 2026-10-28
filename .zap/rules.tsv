@@ -4,3 +4,33 @@
 10021	FAIL	(X-Content-Type-Options Header Missing)
 10035	FAIL	(Strict-Transport-Security Header Not Set)
 10038	FAIL	(Content-Security-Policy Header Not Set)
+# ------------------------------------------------------------------------------
+# REGISTRO FORMAL DE EXCEÇÃO DE SEGURANÇA — CLUBE AURORA
+# ------------------------------------------------------------------------------
+# Regra: 90005 (Sec-Fetch-Dest Header is Missing)
+# Severidade: Informational / WARN
+# Justificativa Técnica: esta regra inspeciona cabeçalhos da REQUISIÇÃO
+# (Sec-Fetch-Dest é definido pelo navegador ao fazer fetch, não pelo
+# servidor). O próprio scanner do ZAP Baseline não envia Fetch Metadata
+# completo ao rastrear a aplicação, portanto o achado não é corrigível via
+# nenhuma resposta HTTP do lado do servidor (confirmado na implementação
+# FetchMetadataRequestHeadersScanRule do ZAP e na documentação oficial do
+# alerta 90005). Não há mitigação de servidor aplicável.
+# Responsável: Rafael César (DevSecOps, Trilha 3)
+# Data de Revisão: 2027-04-30
+# ------------------------------------------------------------------------------
+90005	IGNORE	(Sec-Fetch-Dest é cabeçalho de requisição; não corrigível no servidor)
+# ------------------------------------------------------------------------------
+# Regra: 10049 (Content Cacheability — Non-Storable/Storable.../Storable e...)
+# Severidade: Informational
+# Justificativa Técnica: esta regra classifica TODA resposta em uma de 3
+# categorias mutuamente exclusivas (10049-1 Non-Storable, 10049-2 Storable
+# mas não cacheável, 10049-3 Storable e cacheável) — ou seja, sempre dispara
+# exatamente um dos três alertas, não importa a configuração de cabeçalhos.
+# Já aplicamos Cache-Control: no-store (a opção mais segura, resultando na
+# variante "Non-Storable"), então o achado é esperado e não indica um
+# problema real.
+# Responsável: Rafael César (DevSecOps, Trilha 3)
+# Data de Revisão: 2027-04-30
+# ------------------------------------------------------------------------------
+10049	IGNORE	(Classificação informativa que sempre dispara; já usamos a variante mais segura - Cache-Control: no-store)
