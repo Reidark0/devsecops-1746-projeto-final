@@ -13,12 +13,18 @@ RUN apt-get update \
     && apt-get upgrade -y \
     && rm -rf /var/lib/apt/lists/* \
     && useradd -u 10001 -m nonroot \
-    # wheel e jaraco.context vêm do bootstrap de pip/setuptools da imagem
-    # base (ensurepip), não de requirements.txt — são ferramentas de build,
-    # nunca importadas pela aplicação em runtime. Atualizadas aqui para as
-    # versões corrigidas (CVE-2026-24049 / CVE-2026-23949) reportadas pelo
-    # Trivy Image scan.
-    && python -m pip install --no-cache-dir --upgrade "wheel>=0.46.2" "jaraco.context>=6.1.0"
+    # pip/setuptools/wheel (e a dependência transitiva jaraco.context) vêm
+    # do bootstrap da imagem base (ensurepip) e nunca são importados pela
+    # aplicação em runtime (confirmado: flask/werkzeug/gunicorn/itsdangerous
+    # rodam normalmente sem eles). Em vez de só atualizar as duas libs
+    # flagradas pelo Trivy Image (CVE-2026-24049 em wheel, CVE-2026-23949
+    # em jaraco.context), removemos as ferramentas de build inteiras do
+    # runtime — elimina a CVE independente de qual diretório elas ocupam.
+    && python -m pip uninstall -y wheel jaraco.context setuptools pip ; \
+    find /usr/local/lib/python3*/ /usr/lib/python3*/ -maxdepth 2 \
+        \( -iname "wheel*" -o -iname "jaraco*" -o -iname "setuptools*" -o -iname "pip-*" -o -iname "pip" \) \
+        -exec rm -rf {} + 2>/dev/null; \
+    true
 
 WORKDIR /app
 
