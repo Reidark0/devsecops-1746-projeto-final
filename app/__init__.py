@@ -33,11 +33,21 @@ def create_app(test_config=None):
         # para dentro do blueprint "main" — ex.: GET /admin sem rota definida.
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
-        response.headers["Content-Security-Policy"] = "default-src 'self'"
+        # object-src/base-uri/form-action/frame-ancestors declarados explicitamente
+        # (regra ZAP 10055: diretivas sem fallback para default-src).
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; object-src 'none'; base-uri 'self'; "
+            "form-action 'self'; frame-ancestors 'none'"
+        )
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         response.headers["Referrer-Policy"] = "no-referrer"
         response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=()"
         response.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
+        response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+        # API retorna dados de clientes VIP: nunca deve ficar em cache de
+        # proxies/navegador (regra ZAP 10049: Storable and Cacheable Content).
+        response.headers["Cache-Control"] = "no-store, max-age=0"
+        response.headers["Pragma"] = "no-cache"
         return response
 
     from .main import bp
