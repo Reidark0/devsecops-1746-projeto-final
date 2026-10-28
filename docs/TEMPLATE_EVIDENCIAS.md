@@ -3,7 +3,7 @@
 **Nome do Aluno(a):** Rafael César
 **Turma:** DevSecOps 1746
 **Link do Repositório / Fork no GitHub:** `https://github.com/Reidark0/devsecops-1746-projeto-final`
-**Branch com as correções:** `fix/trilha-3-seguranca` (12 commits atômicos — 7 falhas originais + 5 correções de causa raiz em 3 rodadas de feedback real do pipeline, ver seções 2 e 3)
+**Branch com as correções:** `fix/trilha-3-seguranca` (14 commits atômicos — 7 falhas originais + 5 correções de causa raiz em 3 rodadas de feedback real do pipeline + 2 commits de documentação, ver seções 2 e 3)
 **Link do Pull Request Principal:** `https://github.com/Reidark0/devsecops-1746-projeto-final/pull/1`
 
 > **Status:** o pipeline já rodou de fato no GitHub Actions e, ao longo de 3 rodadas, revelou achados reais que a validação local (sem daemon Docker disponível no ambiente de correção) não conseguiu prever — todos corrigidos e commitados (ver Seção 3). A execução final (run #8, abaixo) já está **100% verde**. A branch `main` exige PR + aprovação (Branch Protection, ver Seção 4.2), então o PR [#1](https://github.com/Reidark0/devsecops-1746-projeto-final/pull/1) segue aberto aguardando revisão antes do merge — o que não impede a entrega, já que o requisito da disciplina é o PR aberto com a esteira verde, não o merge em si.
@@ -145,10 +145,10 @@ Análise detalhada de causa raiz de todos os achados em [`executive-explanation.
   ![DevSecOps Pipeline Fix/trilha 3 seguranca #8 — Success, ambos os jobs verdes](image.png)
 
   **Fix/trilha 3 seguranca #8 — Success** em 3m 36s, disparado via Pull Request (`fix/trilha-3-seguranca`). Os dois jobs passam: `1. Quality Gate Estático (SAST, SCA & Lint)` (1m 26s) e `2. Quality Gate Dinâmico (Container, SBOM & DAST)` (2m 6s).
-- **Link direto para a execução bem-sucedida do Actions:**
-  `https://github.com/Reidark0/devsecops-1746-projeto-final/actions/runs/40626742241`
-- **Proteção da Branch Main:**
-  *(Pendente — recomendado configurar em Settings → Branches após o merge do PR, conforme seção 6.2 do `docs/GUIA_TRILHA_3_TECNICA.md`)*
+
+- **Link direto para a execução bem-sucedida do Actions:** `https://github.com/Reidark0/devsecops-1746-projeto-final/actions/runs/40626742241`
+
+- **Proteção da Branch Main:** configurada (PR + 1 aprovador obrigatórios na `main`) — detalhes na Seção 4.2.
 
 **Evidência equivalente obtida localmente após todas as correções** (mesmas ferramentas e versões do pipeline, executadas sobre o estado corrigido — branch `fix/trilha-3-seguranca`, commit `7c5e6bd`):
 
@@ -163,7 +163,7 @@ Análise detalhada de causa raiz de todos os achados em [`executive-explanation.
 | pytest | `pytest -v` | `7 passed` |
 | Gabarito do curso | `python scripts/selfcheck.py --nivel 3` | `SUCESSO: Todas as checagens da Trilha 3 passaram localmente!` |
 
-O Trivy sobre a **imagem Docker já construída** e o ZAP Baseline não puderam ser executados localmente de ponta a ponta (ausência de daemon Docker no ambiente da correção) — mas, como descrito acima, já foram validados por duas execuções reais do GitHub Actions, que é justamente o que revelou e permitiu corrigir os 4 achados desta seção.
+O Trivy sobre a **imagem Docker já construída** e o ZAP Baseline não puderam ser executados localmente de ponta a ponta (ausência de daemon Docker no ambiente da correção) — mas, como descrito acima, já foram validados por três execuções reais do GitHub Actions, que é justamente o que revelou e permitiu corrigir os 4 achados desta seção, culminando na execução final 100% verde (print acima).
 
 ---
 
@@ -174,6 +174,7 @@ O Trivy sobre a **imagem Docker já construída** e o ZAP Baseline não puderam 
 Não foi necessário criar o arquivo `.trivyignore`. Após a atualização de dependências (F2), o `Trivy FS` retornou **0 vulnerabilidades HIGH/CRITICAL** (`Total: 0 (HIGH: 0, CRITICAL: 0)`), sem nenhum pacote sem correção disponível que exigisse uma exceção formal de risco.
 
 Duas exceções formais de risco **foram** necessárias para o scanner DAST (OWASP ZAP), documentadas em `.zap/rules.tsv` com o mesmo rigor de um `.trivyignore` (motivo técnico, responsável e data de revisão):
+
 - **Regra `90005`** (Sec-Fetch-Dest Header is Missing): inspeciona um cabeçalho de **requisição** do navegador, não corrigível por nenhuma resposta do servidor (confirmado na documentação oficial do ZAP e na implementação `FetchMetadataRequestHeadersScanRule`).
 - **Regra `10049`** (classificação de cacheabilidade): dispara exatamente uma de 3 classificações mutuamente exclusivas para qualquer resposta HTTP; já usamos a variante mais segura (`Non-Storable`, via `Cache-Control: no-store`).
 
